@@ -1,0 +1,3 @@
+commitment==2.0.0
+requests==2.13.0
+scraperwiki==0.5.1
