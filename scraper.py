@@ -11,7 +11,7 @@ import scraperwiki
 
 
 COMMIT_RESULT = True
-DATA_REPO = 'DemocracyClub/arcgis-hub-sites'
+DATA_REPO = 'DemocracyClub/open-data-portals'
 
 
 class Paginator:
@@ -88,7 +88,7 @@ def scrape():
     for p in pages:
         process_page(p)
     if COMMIT_RESULT:
-        sync_file_to_github(DATA_REPO, 'data.json', dump_table())
+        sync_file_to_github(DATA_REPO, 'arcgis_hub.json', dump_table())
 
 def init():
     scraperwiki.sql.execute("""
