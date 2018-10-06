@@ -13,6 +13,6 @@ def sync_file_to_github(repo, filename, content):
     g = GitHubClient(creds)
     g.push_file(content, filename, 'Found new ArcGIS Hub site')
 
-def dump_table():
-    records = scraperwiki.sqlite.select(" * FROM data ORDER BY url;")
+def dump_table(table):
+    records = scraperwiki.sqlite.select(" * FROM {} ORDER BY url;".format(table))
     return json.dumps([r['url'] for r in records], indent=4)

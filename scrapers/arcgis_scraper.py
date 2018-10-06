@@ -27,15 +27,20 @@ class Paginator:
 
 class ArcGisHubScraper:
 
+    @property
+    def table_name(self):
+        return 'arcgis_hub'
+
     def __init__(self, commit_result, data_repo=None):
         self.commit_result = commit_result
         self.data_repo = data_repo
         scraperwiki.sql.execute("""
-            CREATE TABLE IF NOT EXISTS data (url TEXT);
-        """)
+            CREATE TABLE IF NOT EXISTS {} (url TEXT);
+        """.format(self.table_name))
         scraperwiki.sql.execute("""
-            CREATE UNIQUE INDEX IF NOT EXISTS data_url_unique ON data (url);
-        """)
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            {table}_url_unique ON {table} (url);
+        """.format(table=self.table_name))
 
     def is_interesting_site(self, site):
         try:
@@ -66,7 +71,7 @@ class ArcGisHubScraper:
             if self.is_interesting_site(site):
                 url = site['attributes']['url']
                 scraperwiki.sqlite.save(
-                    unique_keys=['url'], data={'url': url}, table_name='data')
+                    unique_keys=['url'], data={'url': url}, table_name=self.table_name)
                 scraperwiki.sqlite.commit_transactions()
                 print('👀 found {}'.format(url))
 
@@ -76,4 +81,8 @@ class ArcGisHubScraper:
             self.process_page(p)
 
         if self.commit_result and self.data_repo:
-            sync_file_to_github(self.data_repo, 'arcgis_hub.json', dump_table())
+            sync_file_to_github(
+                self.data_repo,
+                '{}.json'.format(self.table_name),
+                dump_table(self.table_name)
+            )
