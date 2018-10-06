@@ -59,10 +59,10 @@ class ArcGisHubScraper(BaseScraper):
         for site in page['data']:
             if self.is_interesting_site(site):
                 url = site['attributes']['url']
+                print('👀 found {}'.format(url))
                 scraperwiki.sqlite.save(
                     unique_keys=['url'], data={'url': url}, table_name=self.table_name)
                 scraperwiki.sqlite.commit_transactions()
-                print('👀 found {}'.format(url))
 
     def scrape(self):
         pages = Paginator('https://opendata.arcgis.com/api/v2/sites?page[number]=1&page[size]=500')
