@@ -1,28 +1,14 @@
 import requests
 import scraperwiki
 from .base import BaseScraper
+from json_paginator import JsonApiPaginator
 
 
-class Paginator:
-    def __init__(self, page1):
-        self.next_page = page1
-
-    def __iter__(self):
-        while self.next_page:
-            print('🔍 searching {} ...'.format(self.next_page))
-
-            r = requests.get(self.next_page)
-            r.raise_for_status()
-            data = r.json()
-
-            try:
-                self.next_page = data['links']['next']
-            except KeyError:
-                self.next_page = None
-
-            yield data
-
-        raise StopIteration()
+def get_next_page(url, body):
+    try:
+        return body['links']['next']
+    except KeyError:
+        return None
 
 
 class ArcGisHubScraper(BaseScraper):
@@ -65,6 +51,7 @@ class ArcGisHubScraper(BaseScraper):
                 scraperwiki.sqlite.commit_transactions()
 
     def scrape(self):
-        pages = Paginator('https://opendata.arcgis.com/api/v2/sites?page[number]=1&page[size]=500')
-        for p in pages:
-            self.process_page(p)
+        pages = JsonApiPaginator('https://opendata.arcgis.com/api/v2/sites?page[number]=1&page[size]=500', get_next_page)
+        for url, body in pages:
+            print('🔍 searching {} ...'.format(url))
+            self.process_page(body)
