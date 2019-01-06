@@ -1,10 +1,11 @@
 import requests
 import scraperwiki
 from .base import BaseScraper
-from json_paginator import JsonApiPaginator
+from requests_paginator import RequestsPaginator
 
 
-def get_next_page(url, body):
+def get_next_page(page):
+    body = page.json()
     try:
         return body['links']['next']
     except KeyError:
@@ -51,7 +52,11 @@ class ArcGisHubScraper(BaseScraper):
                 scraperwiki.sqlite.commit_transactions()
 
     def scrape(self):
-        pages = JsonApiPaginator('https://opendata.arcgis.com/api/v2/sites?page[number]=1&page[size]=500', get_next_page)
-        for url, body in pages:
-            print('🔍 searching {} ...'.format(url))
-            self.process_page(body)
+        pages = RequestsPaginator(
+            'https://opendata.arcgis.com/api/v2/sites?page[number]=1&page[size]=500',
+            get_next_page
+        )
+        for page in pages:
+            page.raise_for_status()
+            print('🔍 searching {} ...'.format(page.url))
+            self.process_page(page.json())
